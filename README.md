@@ -35,7 +35,7 @@ At First, information is feed into the input layer which then transfers it to th
 ```yaml
 
 params:
-  epochs: 1
+  epochs: 5
   batch_size: 32
   no_classes: 10
   input_shape: [28,28]
@@ -51,11 +51,13 @@ artifacts:
   model_dir: model
   plots_dir: plots
   checkoint_dir: checkpoints
+  model_name: model.h5
+  plots_name: plot.png
 
 logs:
   logs_dir: logs_dir
   general_logs: general_logs
-  tensorboard_logs: tensorboard_logs 
+  tensorboard_logs: tensorboard_logs
 
 ```
 
@@ -67,8 +69,6 @@ logs:
           tf.keras.layers.Flatten(input_shape=[28,28], name="inputlayer"),
           tf.keras.layers.Dense(300,activation="relu", name="hiddenlayer1"),
           tf.keras.layers.Dense(100,activation="relu", name="hiddenlayer2"),
-          tf.keras.layers.Dense(OUTPUT_CLASSES,activation="relu", name="outputlayer")] 
+          tf.keras.layers.Dense(OUTPUT_CLASSES,activation="softmax", name="outputlayer")] 
 
 ```
-
-### As of now the layers and datasets are not yet supported in yaml file for easy configuration, will be added in later stages.

@@ -48,7 +48,7 @@ def training(filename):
     save_plots(df, plots_name, plots_dir_path)
 
     logging.info(model.evaluate(X_test,y_test))
-    logging.info(df)
+    logging.info(f" \n, {df}")
 
 
 if __name__ == '__main__':
