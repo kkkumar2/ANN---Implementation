@@ -21,4 +21,5 @@ artifacts:
 logs:
   logs_dir: logs_dir
   general_logs: general_logs
-  tensorboard_logs: tensorboard_logs 
+  tensorboard_logs: tensorboard_logs
+  tf_logs_name: tf_logs
