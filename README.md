@@ -72,3 +72,6 @@ logs:
           tf.keras.layers.Dense(OUTPUT_CLASSES,activation="softmax", name="outputlayer")] 
 
 ```
+```python
+tensorboard --logdir logs_dir/tensorboard_logs
+```
