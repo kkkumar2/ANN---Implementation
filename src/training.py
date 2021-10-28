@@ -1,7 +1,7 @@
-from utils.common import read_config
+from src.utils.common import read_config
 import argparse
-from utils.data_mgmt import get_data
-from utils.model import create_model, save_model, save_plots, save_tf_logs
+from src.utils.data_mgmt import get_data
+from src.utils.model import create_model, save_model, save_plots, save_tf_logs
 import os
 import pandas as pd
 import logging
@@ -10,21 +10,19 @@ import numpy as np
 import tensorflow as tf
 
 
-
-
 def training(filename):
     config = read_config(filename)
-    logging.info(config)
+    
 #    validation_datasize = config.get('validation_datasize')
 
     logging_str = "[%(asctime)s: %(levelname)s: %(module)s] %(message)s"
     logs_dir = config['logs']['logs_dir']
-    general_logs = config['logs']['general_logs']
+    standard_logs = config['logs']['general_logs']
     os.makedirs(logs_dir, exist_ok=True)
-    general_logs_dir = os.path.join(logs_dir, general_logs)
+    general_logs_dir = os.path.join(logs_dir, standard_logs)
     os.makedirs(general_logs_dir, exist_ok=True)
-    logging.basicConfig(filename = os.path.join(general_logs_dir, 'ANN.log'), level=logging.INFO, format=logging_str,filemode='a')
-
+    logging.basicConfig(filename = os.path.join(general_logs_dir, 'ANN.log'), level=logging.INFO, format=logging_str,filemode='w')
+    logging.info(config)
 ##
     validation_datasize = config['params']['validation_datasize']
     (X_train, y_train), (X_valid, y_valid), (X_test, y_test) = get_data(validation_datasize)
@@ -91,6 +89,5 @@ def training(filename):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Artificial Neural Networks")
     parser.add_argument("--config", "-c",default="config.yaml")
-    parsed_args = parser.parse_args()
-    
+    parsed_args = parser.parse_args()  
     training(filename=parsed_args.config)
