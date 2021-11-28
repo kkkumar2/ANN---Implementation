@@ -8,82 +8,91 @@ import logging
 import time
 import numpy as np
 import tensorflow as tf
+import mlflow
+import mlflow.tensorflow
 
+
+# Enable auto-logging to MLflow to capture TensorBoard metrics.
+mlflow.tensorflow.autolog()
 
 def training(filename):
     config = read_config(filename)
     
+    with mlflow.start_run():
+
 #    validation_datasize = config.get('validation_datasize')
 
-    logging_str = "[%(asctime)s: %(levelname)s: %(module)s] %(message)s"
-    logs_dir = config['logs']['logs_dir']
-    standard_logs = config['logs']['general_logs']
-    os.makedirs(logs_dir, exist_ok=True)
-    general_logs_dir = os.path.join(logs_dir, standard_logs)
-    os.makedirs(general_logs_dir, exist_ok=True)
-    logging.basicConfig(filename = os.path.join(general_logs_dir, 'ANN.log'), level=logging.INFO, format=logging_str,filemode='w')
-    logging.info(config)
-##
-    validation_datasize = config['params']['validation_datasize']
-    (X_train, y_train), (X_valid, y_valid), (X_test, y_test) = get_data(validation_datasize)
+        logging_str = "[%(asctime)s: %(levelname)s: %(module)s] %(message)s"
+        logs_dir = config['logs']['logs_dir']
+        standard_logs = config['logs']['general_logs']
+        os.makedirs(logs_dir, exist_ok=True)
+        general_logs_dir = os.path.join(logs_dir, standard_logs)
+        os.makedirs(general_logs_dir, exist_ok=True)
+        logging.basicConfig(filename = os.path.join(general_logs_dir, 'ANN.log'), level=logging.INFO, format=logging_str,filemode='w')
+        logging.info(config)
+        ##
+        validation_datasize = config['params']['validation_datasize']
+        (X_train, y_train), (X_valid, y_valid), (X_test, y_test) = get_data(validation_datasize)
 
-#    LOSS,OPTIMIZER,METRICS,OUTPUT_CLASSES = [config.get(key) for key in ['loss_function','optimizer','metrics','no_classes']]
-    LOSS = config['params']['loss_function']
-    OPTIMIZER = config['params']['optimizer']
-    METRICS = config['params']['metrics']
-    OUTPUT_CLASSES = config['params']['no_classes']
+        #    LOSS,OPTIMIZER,METRICS,OUTPUT_CLASSES = [config.get(key) for key in ['loss_function','optimizer','metrics','no_classes']]
+        LOSS = config['params']['loss_function']
+        OPTIMIZER_value = config['params']['optimizer']
+        OPTIMIZER = config['params'][OPTIMIZER_value]
+        logging.info(f'Optimizer is {OPTIMIZER}')
+        METRICS = config['params']['metrics']
+        OUTPUT_CLASSES = config['params']['no_classes']
 
-    model = create_model(LOSS,OPTIMIZER,METRICS,OUTPUT_CLASSES)
+        model = create_model(LOSS,OPTIMIZER,METRICS,OUTPUT_CLASSES)
 
-    EPOCHS = config['params']['epochs']
-    artifacts_dir = config["artifacts"]["artifacts_dir"]
-    model_dir = config["artifacts"]["model_dir"]
-    plots_dir = config["artifacts"]["plots_dir"]
-    tensorboard_logs = config["logs"]["tensorboard_logs"]
+        EPOCHS = config['params']['epochs']
+        artifacts_dir = config["artifacts"]["artifacts_dir"]
+        model_dir = config["artifacts"]["model_dir"]
+        plots_dir = config["artifacts"]["plots_dir"]
+        tensorboard_logs = config["logs"]["tensorboard_logs"]
 
-    model_dir_path = os.path.join(artifacts_dir, model_dir)
-    os.makedirs(model_dir_path, exist_ok=True)
+        model_dir_path = os.path.join(artifacts_dir, model_dir)
+        os.makedirs(model_dir_path, exist_ok=True)
 
-    model_chk_dir_path = os.path.join(artifacts_dir, model_dir, 'model_chk')
-    os.makedirs(model_dir_path, exist_ok=True)
+        model_chk_dir_path = os.path.join(artifacts_dir, model_dir, 'model_chk')
+        os.makedirs(model_dir_path, exist_ok=True)
 
-    plots_dir_path = os.path.join(artifacts_dir, plots_dir)
-    os.makedirs(plots_dir_path, exist_ok=True)
+        plots_dir_path = os.path.join(artifacts_dir, plots_dir)
+        os.makedirs(plots_dir_path, exist_ok=True)
 
-    tf_dir_path = os.path.join(logs_dir, tensorboard_logs)
-    os.makedirs(tf_dir_path, exist_ok=True)
+        tf_dir_path = os.path.join(logs_dir, tensorboard_logs)
+        os.makedirs(tf_dir_path, exist_ok=True)
 
-    model_name = config["artifacts"]["model_name"]
-    plots_name = config["artifacts"]["plots_name"]
-    tf_logs_name = config["logs"]["tf_logs_name"]
+        model_name = config["artifacts"]["model_name"]
+        plots_name = config["artifacts"]["plots_name"]
+        tf_logs_name = config["logs"]["tf_logs_name"]
 
-    tme = "log_%Y_%m_%d_%H_%M_%S"
-    tf_writer, tf_logs = save_tf_logs(tf_dir_path, tf_logs_name, tme)
-    with tf_writer.as_default():
-        images = np.reshape(X_train[:20],(-1,28,28,1))
+        tme = "log_%Y_%m_%d_%H_%M_%S"
+        tf_writer, tf_logs = save_tf_logs(tf_dir_path, tf_logs_name, tme)
+        with tf_writer.as_default():
+            images = np.reshape(X_train[:20],(-1,28,28,1))
         tf.summary.image("Sample images from training dataset", images, max_outputs=20, step=0)
 
-    tensorboard_cb = tf.keras.callbacks.TensorBoard(log_dir=tf_logs)
-    early_Stopping_cb = tf.keras.callbacks.EarlyStopping(patience=5,restore_best_weights=True)
-    chk_path = os.path.join(model_chk_dir_path + '/model.h5')
-    checkpointing_cb = tf.keras.callbacks.ModelCheckpoint(chk_path, save_best_only=True)
+        tensorboard_cb = tf.keras.callbacks.TensorBoard(log_dir=tf_logs)
+        early_Stopping_cb = tf.keras.callbacks.EarlyStopping(patience=5,restore_best_weights=True)
+        chk_path = os.path.join(model_chk_dir_path + '/model.h5')
+        checkpointing_cb = tf.keras.callbacks.ModelCheckpoint(chk_path, save_best_only=True)
 
-    CALLBACKS_LIST = [tensorboard_cb, early_Stopping_cb, checkpointing_cb]
+        CALLBACKS_LIST = [tensorboard_cb, early_Stopping_cb, checkpointing_cb]
 
-    VALIDATION = (X_valid,y_valid)
-    run_stats = model.fit(x=X_train, y=y_train , epochs=EPOCHS, validation_data=VALIDATION,callbacks=CALLBACKS_LIST)
-    df = pd.DataFrame(run_stats.history)
+        VALIDATION = (X_valid,y_valid)
+        run_stats = model.fit(x=X_train, y=y_train , epochs=EPOCHS, validation_data=VALIDATION,callbacks=CALLBACKS_LIST)
+        df = pd.DataFrame(run_stats.history)
 
-    tme = '%Y%m%d_%H%M%S_'
-    save_model(model, model_name, model_dir_path,tme)
-    save_plots(df, plots_name, plots_dir_path,tme)
+        tme = '%Y%m%d_%H%M%S_'
+        save_model(model, model_name, model_dir_path,tme)
+        save_plots(df, plots_name, plots_dir_path,tme)
 
-    logging.info(model.evaluate(X_test,y_test))
-    logging.info(f" \n, {df}")
+        logging.info(model.evaluate(X_test,y_test))
+        logging.info(f" \n, {df}")
 
-    ckpt_model = tf.keras.models.load_model(chk_path)
+        ckpt_model = tf.keras.models.load_model(chk_path)
 
-    history = ckpt_model.fit(X_train, y_train, epochs=EPOCHS,validation_data=VALIDATION, callbacks=CALLBACKS_LIST)
+        history = ckpt_model.fit(X_train, y_train, epochs=EPOCHS,validation_data=VALIDATION, callbacks=CALLBACKS_LIST, )
 
 
 if __name__ == '__main__':

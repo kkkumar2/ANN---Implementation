@@ -5,27 +5,28 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
     PROJECT_NAME = "ANN---Implementation"
     USER_NAME = "kkkumar2"
+    BRANCH_NAME = "Branch1"
 
 setuptools.setup(
     name=f"{PROJECT_NAME}-{USER_NAME}",
-    version="0.0.2",
+    version="0.0.3",
     author=USER_NAME,
     author_email="kmohankumar123456@gmail.com",
     description="This is a ANN using Tensorflow package",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url=f"https://github.com/{USER_NAME}/{PROJECT_NAME}",
+    url=f"https://github.com/{USER_NAME}/{PROJECT_NAME}/tree/{BRANCH_NAME}",
     project_urls={
-        "Bug Tracker": f"https://github.com/{USER_NAME}/{PROJECT_NAME}",
+        "Bug Tracker": f"https://github.com/{USER_NAME}/{PROJECT_NAME}/tree/{BRANCH_NAME}",
     },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    package_dir={"": "src"},
-#    packages=["src"],
-    packages=setuptools.find_packages(where="src"),
+#    package_dir={"": "src"},
+    packages=["src"],
+#    packages=setuptools.find_packages(where="src"),
     python_requires=">=3.7",
 #    with open("requirements.txt", "r", encoding="utf-8") as fh:
 #    install_requires = fh.read()

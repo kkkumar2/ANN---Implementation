@@ -5,7 +5,16 @@ params:
   input_shape: [28,28]
   loss_function: sparse_categorical_crossentropy
   metrics: accuracy
-  optimizer: SGD
+  optimizer: optimizer7
+  optimizer1: SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+  optimizer2: SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=False)
+  optimizer3: RMSprop
+  optimizer4: Adagrad
+  optimizer5: Adadelta
+  optimizer6: Adamax
+  optimizer7: Adam
+  
+ 
   validation_datasize: 5000
 
 
